@@ -1,0 +1,235 @@
+diff --git a/kern/asst1/catlock.c b/kern/asst1/catlock.c
+index cd3ae6b..bae933c 100644
+--- a/kern/asst1/catlock.c
++++ b/kern/asst1/catlock.c
+@@ -44,6 +44,13 @@
+ 
+ #define NMICE 2
+ 
++// Create necessary locks
++struct lock *cat_mouse_lock;
++struct lock *bowl_lock[NFOODBOWLS];
++struct lock *finished_lock;
++// Create necessary count variables
++int cats_currently_eating = 0;
++int number_finished = 0;
+ 
+ /*
+  * 
+@@ -51,6 +58,54 @@
+  * 
+  */
+ 
++/*
++ * lock_eat():
++ *
++ * Arguments:
++ *     char *who: animal name attempting to access a bowl
++ *     int num: used along with *who to represent which animal number
++ *     int bowl: represents bowl
++ *     int iter: current iteration
++ *
++ *
++ * Returns:
++ *     nothing
++ *
++ */
++static
++void
++lock_eat(const char *who, int num, int bowl, int iter) {
++	kprintf("%s: %d starts eating bowl %d, iteration %d\n", who, num, bowl,
++		iter);
++	//
++	clocksleep(1);
++	kprintf("%s: %d ends eating: bowl %d, iteration %d\n", who, num, bowl,
++		iter);
++}
++
++
++/*
++ * try_eat_some_bowl()
++ *
++ * Arguments:
++ *     char *who: animal name attempting to access a bowl
++ *     int num: used along with *who to represent which animal number
++ *     int iter: current iteration
++ *
++ * Returns nothing
++ *
++ */
++static
++void
++try_eat_some_bowl(const char *who, int num, int iter) {
++	// select a random food bowl
++	int bowl = (int)(random() % NFOODBOWLS) + 1;
++	// wait for lock on bowl, eat from it, and release lock
++	lock_acquire(bowl_lock[bowl]);
++	lock_eat(who, num, bowl, iter);
++	lock_release(bowl_lock[bowl]);
++}
++
+ 
+ /*
+  * catlock()
+@@ -79,6 +134,32 @@ catlock(void * unusedpointer,
+ 
+         (void) unusedpointer;
+         (void) catnumber;
++	
++	int i;
++	for (i = 0; i < 4;) {
++		// Wait for lock to be acquired
++		lock_acquire(cat_mouse_lock);
++		if (cats_currently_eating == 0 || cats_currently_eating == 1) {
++			// if only 0 or 1 cats are eating, have another eat
++			cats_currently_eating++;
++			lock_release(cat_mouse_lock);
++			try_eat_some_bowl("cat", catnumber, i);
++
++			// cats finished eating
++			lock_acquire(cat_mouse_lock);
++			cats_currently_eating--;
++			lock_release(cat_mouse_lock);
++			++i;
++		}
++		else {
++			// release lock if already 2 cats eating
++			lock_release(cat_mouse_lock);
++		}
++		thread_yield();
++	}
++	lock_acquire(finished_lock);
++	++number_finished;
++	lock_release(finished_lock);
+ }
+ 	
+ 
+@@ -109,6 +190,36 @@ mouselock(void * unusedpointer,
+         
+         (void) unusedpointer;
+         (void) mousenumber;
++
++	int i;
++	for (i = 0; i < 4;) {
++		lock_acquire(cat_mouse_lock);
++		if (cats_currently_eating == 0 || cats_currently_eating >= 3) {
++			// if no cats are currently eating or 3+ cats are eating,
++			// have a mouse try to eat
++			cats_currently_eating = (cats_currently_eating == 0) ? 3:
++				(cats_currently_eating + 1);
++			lock_release(cat_mouse_lock);
++			try_eat_some_bowl("mouse", mousenumber, i);
++
++			// finish eating
++			lock_acquire(cat_mouse_lock);
++			cats_currently_eating = (cats_currently_eating == 3) ? 0:
++				(cats_currently_eating - 1);
++			lock_release(cat_mouse_lock);
++			++i;
++		}
++		else {
++			// release lock if mouse unable to eat
++			lock_release(cat_mouse_lock);
++		}
++		thread_yield();
++	}
++
++	// mouse is finished
++	lock_acquire(finished_lock);
++	++number_finished;
++	lock_release(finished_lock);
+ }
+ 
+ 
+@@ -139,6 +250,20 @@ catmouselock(int nargs,
+ 
+         (void) nargs;
+         (void) args;
++
++	// initialize the locks
++	cat_mouse_lock = lock_create("cat_mouse_lock");
++	assert(cat_mouse_lock != NULL);
++	finished_lock = lock_create("finished_lock");
++	assert(finished_lock != NULL);
++
++	for (index = 0; index < NFOODBOWLS; ++index) {
++		bowl_lock[index] = lock_create("bowl_lock");
++		assert(bowl_lock[index] != NULL);
++	}
++
++	cats_currently_eating = 0;
++	number_finished = 0;
+    
+         /*
+          * Start NCATS catlock() threads.
+@@ -190,6 +315,18 @@ catmouselock(int nargs,
+                 }
+         }
+ 
++	// wait for cats/mice to finish eating
++	while (number_finished < (NCATS + NMICE)) {
++		thread_yield();
++	}
++
++	// destroy locks when finished
++	lock_destroy(cat_mouse_lock);
++	lock_destroy(finished_lock);
++	for (index = 0; index < NFOODBOWLS; ++index) {
++		lock_destroy(bowl_lock[index]);
++	}
++
+         return 0;
+ }
+ 
+diff --git a/kern/compile/ASST1/catlock.o b/kern/compile/ASST1/catlock.o
+index 83b6c38..1682229 100644
+Binary files a/kern/compile/ASST1/catlock.o and b/kern/compile/ASST1/catlock.o differ
+diff --git a/kern/compile/ASST1/kernel b/kern/compile/ASST1/kernel
+index 349a821..02441f5 100755
+Binary files a/kern/compile/ASST1/kernel and b/kern/compile/ASST1/kernel differ
+diff --git a/kern/compile/ASST1/synch.o b/kern/compile/ASST1/synch.o
+index c72be76..6812e1b 100644
+Binary files a/kern/compile/ASST1/synch.o and b/kern/compile/ASST1/synch.o differ
+diff --git a/kern/compile/ASST1/vers.c b/kern/compile/ASST1/vers.c
+index 689e239..b73f2eb 100644
+--- a/kern/compile/ASST1/vers.c
++++ b/kern/compile/ASST1/vers.c
+@@ -1,3 +1,3 @@
+ /* This file is automatically generated. Edits will be lost.*/
+-const int buildversion = 2;
++const int buildversion = 3;
+ const char buildconfig[] = "ASST1";
+diff --git a/kern/compile/ASST1/vers.o b/kern/compile/ASST1/vers.o
+index 7ad58b7..77da485 100644
+Binary files a/kern/compile/ASST1/vers.o and b/kern/compile/ASST1/vers.o differ
+diff --git a/kern/compile/ASST1/version b/kern/compile/ASST1/version
+index 0cfbf08..00750ed 100644
+--- a/kern/compile/ASST1/version
++++ b/kern/compile/ASST1/version
+@@ -1 +1 @@
+-2
++3
+diff --git a/kern/thread/synch.c b/kern/thread/synch.c
+index 1e144da..caf36e6 100644
+--- a/kern/thread/synch.c
++++ b/kern/thread/synch.c
+@@ -269,6 +269,9 @@ cv_signal(struct cv *cv, struct lock *lock)
+ 	assert(cv != NULL);
+ 	assert(lock != NULL);
+ 
++	// Check if thread holds lock
++	assert(lock_do_i_hold(lock) == 1);
++
+ 	spl = splhigh();
+ 
+ 	// Awaken the sleeping thread
+@@ -286,6 +289,9 @@ cv_broadcast(struct cv *cv, struct lock *lock)
+ 	assert(cv != NULL);
+ 	assert(lock != NULL);
+ 
++	// Check if thread holds lock
++	assert(lock_do_i_hold(lock) == 1);
++
+ 	spl = splhigh();
+ 
+ 	// Wake every sleeping thread in queue

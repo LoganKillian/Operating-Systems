@@ -1,0 +1,26 @@
+Project 2 Questions
+1. 29
+2. LAMEbus
+3. splhigh() sets spl to the highest possible value, which disables
+all interrupts. spl0() sets spl to 0, which enables all interrupts.
+4. int could be signed or unsigned and a different bit size, u_int_32_t makes sure it is a 32-bit unsigned integer.
+5. splx returns the old interrupt state.
+6. SPL_HIGH = 15
+7. 100 times per second
+8. d_open, d_close, d_io, d_ioctl
+9. 32 characters
+10. 512 bytes
+11. fs_sync, fs_getvolname, fs_getroot, fs_unmount
+12. void thread_sleep(const void *addr);
+13. 4 bytes
+14. open, close, reclaim, read, readlink, getdirentry, write, ioctl, stat, gettype, tryseek, fsync, mmap, truncate, namefile, creat, symlink, mkdir, link, remove, rmdir, rename, lookup, lookparent
+15. 1024
+16. 8
+17. kern/include/kern/unistd.h
+18. Yes, the scheduler bootstrap creates the run queue while the thread bootstrap just initializes the first thread.
+19. Zombies are threads that have exited but not been fully deleted yet.
+20. 32
+21. The name of a device is always that device, ex: "lhd0".
+22. Raw device name is same as device but with raw appended at the end, ex: "lhd0raw".
+23. vn_countlock
+24. Block and character devices.

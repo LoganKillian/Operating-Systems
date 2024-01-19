@@ -1,0 +1,51 @@
+How to compile and run: 
+- type command "make" or g++ scheduler.cpp to compile program
+- ./scheduler <file_name> <FCFS | RR | STRF> <time_quantum> to run scheduler.cpp
+- I used the file "task.list" based on the project 5 specification to run my program.
+
+7.1: Solutions Description
+1) How did you seperate scheduling mechanism from scheduling policies?
+	I implemented a modified function for each scheduling policy using different
+	data structures and modifications to fit the specific scheduling policy.
+2) How did implement the three scheduling algorithms?
+	I used a similar format for all three algorithms, but implemented a queue for
+	the round robin strategy and a priorty queue for shortest time remaining first.
+	For round robin, a queue ensures that the task will run for its time quantum
+	and then moved to the back of the queue. For shortest time remaining first, a
+	priority queue ensures that the task with the least amount of time remaining is
+	given the highest priority in the queue. First come first serve did not need any
+	special data structure implementation, tasks run in the order they are received.
+3) How did you calculate waiting times?
+	Waiting time is equal to the finish time - the arrival time - the burst time.
+4) How did you calculate response times?
+	Response time is equal to the start time - the arrival time.
+5) How did you calculate turnaround times?
+	Turnaround time is equal to the finish time - the arrival time.
+6) How did you implement the command-line parser?
+	I followed the project5 specification and implemented the parser in my main()
+	function. I checked for the proper command line arguments, and exited
+	the system if the checks are failed. I followed the formatting given
+	in the specification as well.
+
+7.2: Generality and Error Checking
+1) How general is your solution?
+	The solution works for any task file following the format of the project 5
+	specification.
+2) How easy would it be to add a new scheduling policy into your scheduler?
+	I would say relatively easy, just follow the code for the other scheduling
+	policies and modify it slightly to meet the specifications of the new scheduling policy.
+3) Does your program offer input error checking?
+	Yes, my program offers input error checking, and if the wrong input is given,
+	the user will have to reenter or the system will exit.
+
+7.3:
+1) Is your code elegant or readable?
+	Yes, I have commented most code blocks and used consistent formatting.
+2) How innovative is your solution? Did you try any ideas not suggested here?
+	I think my solution is pretty standard, nothing too innovative, though I like
+	the error checking. I did try to implement a lambda function when making my
+	my priority queue, but I was having issues that I found were due to g++ version. I had never
+	I followed the basic ideas of scheduling from lecture and the 
+	project 5 specification.
+3) Did you document all outside sources?
+	Yes, at the top of scheduler.cpp

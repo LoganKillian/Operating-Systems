@@ -1,0 +1,35 @@
+Script started on Sun 10 Sep 2023 09:44:09 PM CDT
+]777;notify;Command completed;exit]0;lkillian@localhost:~]7;file://localhost.localdomain/home/lkillian[?1034h[lkillian@localhost ~]$ cd ~/cs161/root
+]777;notify;Command completed;cd ~/cs161/root]0;lkillian@localhost:~/cs161/root]7;file://localhost.localdomain/home/lkillian/cs161/root[lkillian@localhost root]$ cs161-gdb kernel
+[?1034hGNU gdb 6.6
+Copyright (C) 2006 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "--host=x86_64-unknown-linux-gnu --target=mips-elf"...
+/home/lkillian/.gdbinit:1: Error in sourced command file:
+simple: No such file or directory.
+(gdb) target remote unix:.sockets/gdb
+Remote debugging using unix:.sockets/gdb
+__start () at ../../arch/mips/mips/start.S:24
+24	../../arch/mips/mips/start.S: No such file or directory.
+	in ../../arch/mips/mips/start.S
+Current language:  auto; currently asm
+(gdb) bra[Keak menu
+Breakpoint 1 at 0x8001baac
+(gdb) c
+Continuing.
+
+Breakpoint 1, 0xffffffff8001baac in menu ()
+(gdb) where
+#0  0xffffffff8001baac in menu ()
+#1  0xffffffff8001a994 in kmain ()
+#2  0xffffffff8000d274 in __start () at ../../arch/mips/mips/start.S:163
+(gdb) detach
+Ending remote debugging.
+(gdb) quit
+]777;notify;Command completed;cs161-gdb kernel]0;lkillian@localhost:~/cs161/root]7;file://localhost.localdomain/home/lkillian/cs161/root[lkillian@localhost root]$ exit
+exit
+
+Script done on Sun 10 Sep 2023 09:45:58 PM CDT

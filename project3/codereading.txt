@@ -1,0 +1,25 @@
+4.1 Thread Questions
+1) When a thread exits, its address space is destroyed and it removes itself from the
+global thread count (the thread is not destroyed itself until thread_destroy is called).
+When a thread sleeps, it assigns itself a sleep address and halts its process. It must 
+be awoken from the same sleep address.
+2) mi_switch and md_switch are the two functions that handle a context switch.
+3) There are 4 thread states: S_RUN, S_READY, S_SLEEP, and S_ZOMB.
+4) To turn interrupts off, it means the CPU can't be retasked by any interrupt. This is 
+accomplished using the splhigh function. It is important to turn off interrupts in the 
+thread subsystem code if tasks needs to be completed atomically.
+5) A thread will wake up another thread using the sleeping address of the sleeping 
+thread. A sleeping thread will only run again once thread_wakeup function is called 
+using the correct sleeping address.
+
+4.2 Scheduler Questions
+6) The scheduler function is responsible for choosing the next thread to run.
+7) The run queue determines what thread is next.
+8) The hardware timer affects the rtclock (generic clock interface), and the 
+thread_yield method is called on a timer interrupt.
+
+4.3 Synchronization Questions
+9) thread_sleep treats a sleeping thread as a lock and uses thread_wakeup to release the 
+lock. The argument for thread_sleep allows thread_wakeup to wake threads based on 
+their sleep address.
+10) Locks can only be released by the same thread that acquires them.

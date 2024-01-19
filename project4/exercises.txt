@@ -1,0 +1,18 @@
+Option 2
+
+Explain how to avoid starvation in your implementation:
+	catlock.c uses multiple locks that properly check each other in order to 
+not interfere with each other, while also making sure that a process is running if 
+possible. It uses basic lock principles such as making sure a lock can only be 
+held by one thread at a time, and making sure a thread is always active if possible.
+
+Comment on your experience of implementing the Cats-and-Mice program. Can you derive
+any principles about the use of the lock and condition variable synchronization
+primitives?
+	The lock implementation is easy to understand in theory, but making sure it 
+worked in practice was a bit challenging. I double-checked as much as possible before 
+saving catlock.c to make sure only one lock was able to be held at a time, as well as
+deal with other lock problems. It overall wasn't too bad due to the simplicity of 
+locks. Another small issue I had that wasn't a big deal but news to me was declaring 
+a variable in a for loop wasn't allowed for this version of c. I was so confused when 
+I got an error for it, and I should have just used a while loop instead.
